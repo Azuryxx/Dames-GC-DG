@@ -15,40 +15,33 @@ SQUARE_SIZE = (WIDTH - 2 * OFFSET) // 10
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 WOOD_COLOR = (139, 69, 19)
-SCORE_BOX_COLOR = (200, 200, 200)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
 
 # Création de la fenêtre
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Ma-24-DG-GC")
-
-# Chargement de la police de type craie
-chalk_font = pygame.font.Font("CoalhandLuke TRIAL 1.otf", 36)
+pygame.display.set_caption("Jeu de dames")
 
 # Chargement des images
 background_image = pygame.image.load("bois.jpg")
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 pion_image_rose = pygame.image.load("donut_rose.png")
 pion_image_rose = pygame.transform.scale(pion_image_rose, (SQUARE_SIZE, SQUARE_SIZE))
-pion_image_rose_renne = pygame.image.load("renne_rose.png")
-pion_image_rose_renne = pygame.transform.scale(pion_image_rose_renne, (SQUARE_SIZE, SQUARE_SIZE))
+pion_image_rose_promu = pygame.image.load("renne_rose.png")
+pion_image_rose_promu = pygame.transform.scale(pion_image_rose_promu, (SQUARE_SIZE, SQUARE_SIZE))
 pion_image_jaune = pygame.image.load("donut_jaune.png")
 pion_image_jaune = pygame.transform.scale(pion_image_jaune, (SQUARE_SIZE, SQUARE_SIZE))
-pion_image_jaune_renne = pygame.image.load("renne_jaune.png")
-pion_image_jaune_renne = pygame.transform.scale(pion_image_jaune_renne, (SQUARE_SIZE, SQUARE_SIZE))
+pion_image_jaune_promu = pygame.image.load("renne_jaune.png")
+pion_image_jaune_promu = pygame.transform.scale(pion_image_jaune_promu, (SQUARE_SIZE, SQUARE_SIZE))
 
+# Position initiale des pions
 pions_rose = [{"pos": (OFFSET + 80, OFFSET), "promu": False},
               {"pos": (OFFSET + 80 * 3, OFFSET), "promu": False},
               {"pos": (OFFSET + 80 * 5, OFFSET), "promu": False},
-              {"pos": (OFFSET + 80 * 7, OFFSET), "promu": False},
-              {"pos": (OFFSET + 80 * 9, OFFSET), "promu": False}]
+              {"pos": (OFFSET + 80 * 7, OFFSET), "promu": False}]
 
 pions_jaune = [{"pos": (OFFSET, OFFSET + 80 * 9), "promu": False},
                {"pos": (OFFSET + 80 * 2, OFFSET + 80 * 9), "promu": False},
                {"pos": (OFFSET + 80 * 4, OFFSET + 80 * 9), "promu": False},
-               {"pos": (OFFSET + 80 * 6, OFFSET + 80 * 9), "promu": False},
-               {"pos": (OFFSET + 80 * 8, OFFSET + 80 * 9), "promu": False}]
+               {"pos": (OFFSET + 80 * 6, OFFSET + 80 * 9), "promu": False}]
 
 # Fonction pour dessiner le damier
 def draw_checkerboard():
@@ -62,32 +55,17 @@ def draw_checkerboard():
 def draw_border():
     pygame.draw.rect(screen, WOOD_COLOR, (OFFSET - 5, OFFSET - 5, 10 * SQUARE_SIZE + 10, 10 * SQUARE_SIZE + 10), 5)
 
-# Fonction pour dessiner les cases de score
-def draw_score_boxes():
-    box_width = SQUARE_SIZE * 4
-    box_height = SQUARE_SIZE
-    box_y = OFFSET + 10 * SQUARE_SIZE + 10
-
-    pygame.draw.rect(screen, SCORE_BOX_COLOR, (OFFSET, box_y, box_width, box_height))
-    text_red = chalk_font.render("Score Rouge: 0", True, RED)
-    screen.blit(text_red, (OFFSET + box_width // 2 - text_red.get_width() // 2, box_y + box_height // 4))
-
-    pygame.draw.rect(screen, SCORE_BOX_COLOR, (WIDTH - OFFSET - box_width, box_y, box_width, box_height))
-    text_blue = chalk_font.render("Score Bleu: 0", True, BLUE)
-    screen.blit(text_blue, (WIDTH - OFFSET - box_width + box_width // 2 - text_blue.get_width() // 2, box_y + box_height // 4))
-
 # Fonction pour afficher le plateau et les pions
 def draw_game():
     screen.blit(background_image, (0, 0))
     draw_border()
     draw_checkerboard()
-    draw_score_boxes()
 
     # Affichage des pions roses
     for pion in pions_rose:
         px, py = pion["pos"]
         if pion["promu"]:
-            screen.blit(pion_image_rose_renne, (px, py))
+            screen.blit(pion_image_rose_promu, (px, py))
         else:
             screen.blit(pion_image_rose, (px, py))
 
@@ -95,7 +73,7 @@ def draw_game():
     for pion in pions_jaune:
         px, py = pion["pos"]
         if pion["promu"]:
-            screen.blit(pion_image_jaune_renne, (px, py))
+            screen.blit(pion_image_jaune_promu, (px, py))
         else:
             screen.blit(pion_image_jaune, (px, py))
 
@@ -117,6 +95,25 @@ def can_move(new_x, new_y, all_pions):
             return False  # Un autre pion occupe déjà cette position
 
     return True  # Le mouvement est valide
+
+# Fonction pour déplacer un pion
+def move_pion(pion, dx, dy, all_pions):
+    x, y = pion["pos"]
+    new_x = x + dx * SQUARE_SIZE
+    new_y = y + dy * SQUARE_SIZE
+
+    if can_move(new_x, new_y, all_pions):
+        pion["pos"] = (new_x, new_y)
+        return True
+    return False
+
+# Fonction pour vérifier la promotion
+def check_promotion(pion):
+    x, y = pion["pos"]
+    if current_player == "rose" and y == OFFSET + 9 * SQUARE_SIZE:  # Rose arrive en bas
+        pion["promu"] = True
+    elif current_player == "jaune" and y == OFFSET:  # Jaune arrive en haut
+        pion["promu"] = True
 
 # Boucle principale du jeu
 running = True
@@ -156,38 +153,47 @@ while running:
 
                 pion = pions[selected_pion_index]
                 px, py = pion["pos"]
-                new_x = px
-                new_y = py
 
-                # Déplacer le pion en diagonale
-                if event.key == pygame.K_RIGHT:
+                # Si c'est un pion promu, il peut se déplacer en diagonale
+                if pion["promu"]:
+                    if event.key == pygame.K_RIGHT:
+                        move_pion(pion, 1, 1, pions_rose + pions_jaune)
+                    elif event.key == pygame.K_LEFT:
+                        move_pion(pion, -1, 1, pions_rose + pions_jaune)
+                    elif event.key == pygame.K_DOWN:
+                        move_pion(pion, 1, -1, pions_rose + pions_jaune)
+                    elif event.key == pygame.K_UP:
+                        move_pion(pion, -1, -1, pions_rose + pions_jaune)
 
-                    new_x += SQUARE_SIZE
-                    new_y += SQUARE_SIZE
-                elif event.key == pygame.K_LEFT:
-                    new_x -= SQUARE_SIZE
-                    new_y -= SQUARE_SIZE
-                elif event.key == pygame.K_DOWN:
-                    new_x -= SQUARE_SIZE
-                    new_y += SQUARE_SIZE
-                elif event.key == pygame.K_UP:
+                # Sinon, c'est un pion normal, il doit se déplacer d'une seule case
+                else:
+                    # Déplacements pour les pions non promus (vers l'avant)
+                    if current_player == "rose":
+                        if event.key == pygame.K_RIGHT:
+                            move_pion(pion, 1, 1, pions_rose + pions_jaune)
+                        elif event.key == pygame.K_LEFT:
+                            move_pion(pion, -1, 1, pions_rose + pions_jaune)
+                        elif event.key == pygame.K_DOWN:
+                            move_pion(pion, 1, -1, pions_rose + pions_jaune)
+                        elif event.key == pygame.K_UP:
+                            move_pion(pion, -1, -1, pions_rose + pions_jaune)
 
-                    new_x += SQUARE_SIZE
-                    new_y -= SQUARE_SIZE
+                    elif current_player == "jaune":
+                        if event.key == pygame.K_RIGHT:
+                            move_pion(pion, 1, -1, pions_rose + pions_jaune)
+                        elif event.key == pygame.K_LEFT:
+                            move_pion(pion, -1, -1, pions_rose + pions_jaune)
+                        elif event.key == pygame.K_DOWN:
+                            move_pion(pion, 1, 1, pions_rose + pions_jaune)
+                        elif event.key == pygame.K_UP:
+                            move_pion(pion, -1, 1, pions_rose + pions_jaune)
 
-                # Vérifie si le mouvement est possible
-                if can_move(new_x, new_y, pions_rose + pions_jaune):
-                    pion["pos"] = (new_x, new_y)
+                # Vérification de la promotion
+                check_promotion(pion)
 
-                    # Promotion du pion
-                    if current_player == "rose" and new_y == OFFSET + 9 * SQUARE_SIZE:
-                        pion["promu"] = True
-                    elif current_player == "jaune" and new_y == OFFSET:
-                        pion["promu"] = True
-
-                    # Changer de joueur
-                    current_player = "jaune" if current_player == "rose" else "rose"
-                    selected_pion_index = None
+                # Changer de joueur
+                current_player = "jaune" if current_player == "rose" else "rose"
+                selected_pion_index = None
 
     draw_game()
 
