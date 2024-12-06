@@ -65,12 +65,7 @@ def create_pieces():
                 pieces_jaune.append(Piece(x, y, "jaune", pion_image_jaune))
     return pieces_rose, pieces_jaune
 
-# Dessiner le damier
-def draw_checkerboard():
-    for row in range(10):
-        for col in range(10):
-            color = WHITE if (row + col) % 2 == 0 else BLACK
-            pygame.draw.rect(screen, color, (OFFSET + col * SQUARE_SIZE, OFFSET + row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
 
 # Dessiner la bordure
 def draw_border():
