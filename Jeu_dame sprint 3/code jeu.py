@@ -29,13 +29,13 @@ chalk_font = pygame.font.Font("CoalhandLuke TRIAL 1.otf", 36)
 # Chargement des images
 background_image = pygame.image.load("bois.jpg")
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-pion_image_rose = pygame.image.load("donut_rose.png")
+pion_image_rose = pygame.image.load("pion_donut_rose.png")
 pion_image_rose = pygame.transform.scale(pion_image_rose, (SQUARE_SIZE, SQUARE_SIZE))
-pion_image_rose_renne = pygame.image.load("renne_rose.png")
+pion_image_rose_renne = pygame.image.load("renne_donut_rose.png")
 pion_image_rose_renne = pygame.transform.scale(pion_image_rose_renne, (SQUARE_SIZE, SQUARE_SIZE))
-pion_image_jaune = pygame.image.load("donut_jaune.png")
+pion_image_jaune = pygame.image.load("pion_donut_jaune.png")
 pion_image_jaune = pygame.transform.scale(pion_image_jaune, (SQUARE_SIZE, SQUARE_SIZE))
-pion_image_jaune_renne = pygame.image.load("renne_jaune.png")
+pion_image_jaune_renne = pygame.image.load("renne_donut_jaune.png")
 pion_image_jaune_renne = pygame.transform.scale(pion_image_jaune_renne, (SQUARE_SIZE, SQUARE_SIZE))
 
 # Position initiale des pions
