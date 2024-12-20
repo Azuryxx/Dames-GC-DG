@@ -1,5 +1,5 @@
 import pygame
-import MA24_gfx as gfx  # Importation du module graphique
+import MA24_gfx as gfx
 
 # Initialisation de Pygame
 pygame.init()
