@@ -1,28 +1,14 @@
 import pygame
-from .constants import PION_1_bor, PION_2_bor, PION_1, PION_2, CROWN, SQUARE_SIZE
-
+from .constants import PION_1, PION_2, PION_1_bor, PION_2_bor, SQUARE_SIZE
 
 class Piece:
-    PADDING = 15  # Padding autour du cercle pour chaque pièce
-    OUTLINE = 2  # Contour de la pièce
-
     def __init__(self, row, col, color):
-        # Initialise une pièce avec sa position et sa couleur
         self.row = row
         self.col = col
         self.color = color
-        self.king = False  # Indicateur si la pièce est une dame
-        self.x = 0  # Position X
-        self.y = 0  # Position Y
-        self.calc_pos()  # Calcule la position à l'écran
-
-    def calc_pos(self):
-        # Calcule la position (x, y) de la pièce en fonction de la ligne et de la colonne
-        self.x = SQUARE_SIZE * self.col + SQUARE_SIZE // 2
-        self.y = SQUARE_SIZE * self.row + SQUARE_SIZE // 2
+        self.king = False  # Si la pièce est une dame (king)
 
     def make_king(self):
-        # Met la pièce en dame
         self.king = True
 
     def calc_pos(self, offset_x, offset_y):

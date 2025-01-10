@@ -15,7 +15,7 @@ PION_1 = ("deeppink")  # Pion 1
 PION_2 = ("aquamarine")  # Pion 2
 PION_1_bor = ("aquamarine")  # Bordure Pion 1
 PION_2_bor = ("deeppink")  # Bordure Pion 2
-BORDURE = ("olivedrab1")
+BORDURE = ("black")
 
 # Image de la couronne pour les dames
 CROWN = pygame.transform.scale(pygame.image.load("assets/crown.png"), (20, 25))

@@ -1,4 +1,4 @@
-from .constants import RED, WHITE, SQUARE_SIZE, GREY, CROWN
+from .constants import  SQUARE_SIZE, CROWN, PION_1, PION_2, PION_1_bor, PION_2_bor
 import pygame
 
 
@@ -26,11 +26,20 @@ class Piece:
 
     def draw(self, win):
         """Dessine la pièce sur la fenêtre."""
+        # Détermine la couleur de la bordure en fonction du type de pion
+        border_color = PION_1_bor if self.color == PION_1 else PION_2_bor
+
+        # Rayon de la pièce
         radius = SQUARE_SIZE // 2 - self.PADDING
-        pygame.draw.circle(win, GREY, (self.x, self.y), radius + self.OUTLINE)
+
+        # Dessine la bordure
+        pygame.draw.circle(win, border_color, (self.x, self.y), radius + self.OUTLINE)
+
+        # Dessine le corps du pion
         pygame.draw.circle(win, self.color, (self.x, self.y), radius)
+
+        # Dessine la couronne si la pièce est une reine
         if self.king:
-            # Dessiner la couronne si la pièce est une reine
             win.blit(CROWN, (self.x - CROWN.get_width() // 2, self.y - CROWN.get_height() // 2))
 
     def move(self, row, col):
@@ -49,7 +58,7 @@ class Piece:
             directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
         else:
             # Le pion se déplace uniquement vers le bas ou vers le haut selon sa couleur
-            directions = [(-1, -1), (-1, 1)] if self.color == RED else [(1, -1), (1, 1)]
+            directions = [(-1, -1), (-1, 1)] if self.color == PION_1 else [(1, -1), (1, 1)]
 
         # Vérifie les mouvements dans chaque direction
         for direction in directions:

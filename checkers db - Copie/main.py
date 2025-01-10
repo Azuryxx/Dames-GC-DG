@@ -1,6 +1,6 @@
 import pygame
 from tkinter import Tk, Label, Entry, Button, messagebox
-from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE, RED, WHITE
+from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE
 from checkers.game import Game
 from db import create_db, add_user, update_score, get_all_users, login_user
 

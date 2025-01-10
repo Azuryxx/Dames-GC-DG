@@ -1,6 +1,6 @@
-import pygame
-from .constants import CASE_CLAIR, CASE_FONCE, ROWS, COLS, SQUARE_SIZE, PION_1, PION_2, C
-from .piece import Piece
+
+from constants import PION_1, PION_2, ROWS, COLS, SQUARE_SIZE
+from piece import Piece
 
 class Board:
     def __init__(self):
@@ -12,35 +12,17 @@ class Board:
             self.board.append([])  # Crée une nouvelle ligne sur le plateau
             for col in range(COLS):
                 if col % 2 == ((row + 1) % 2):  # Alterne les cases
-                    if row < 3:  # Les pions du joueur 2 (PION_2) dans les 3 premières lignes
+                    if row < 3:  # Les pions bleus (PION_2) sont dans les 3 premières lignes
                         self.board[row].append(Piece(row, col, PION_2))  # Bleu
-                    elif row > 6:  # Les pions du joueur 1 (PION_1) dans les 3 dernières lignes
+                    elif row > 4:  # Les pions roses (PION_1) sont dans les 3 dernières lignes
                         self.board[row].append(Piece(row, col, PION_1))  # Rose
                     else:
                         self.board[row].append(0)  # Case vide
                 else:
                     self.board[row].append(0)  # Case vide
 
-    def draw_squares(self, win):
-        for row in range(ROWS):
-            for col in range(row % 2, COLS, 2):
-                pygame.draw.rect(win, CASE_CLAIR, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-
-    def draw(self, win):
-        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)  # Couleur principale
-        pygame.draw.circle(win, self.border_color, (self.x, self.y), self.radius + 3, 3)  # Bordure
-        if self.king:
-            win.blit(CROWN, (self.x - CROWN.get_width() // 2, self.y - CROWN.get_height() // 2))
-
     def get_piece(self, row, col):
-        # Retourne la pièce à la position donnée (ou 0 si vide)
         return self.board[row][col]
-
-    def move(self, piece, row, col):
-        # Déplace une pièce sur le plateau
-        self.board[piece.row][piece.col] = 0
-        self.board[row][col] = piece
-        piece.move(row, col)
 
     def get_valid_moves(self, piece):
         moves = {}

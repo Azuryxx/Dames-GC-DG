@@ -1,5 +1,5 @@
 import pygame
-from .constants import RED, WHITE, BLUE, SQUARE_SIZE
+from .constants import BLUE, SQUARE_SIZE,PION_1, PION_2
 from checkers.board import Board
 
 class Game:
@@ -33,7 +33,7 @@ class Game:
     def _init(self):
         self.selected = None
         self.board = Board()
-        self.turn = RED  # Le joueur rouge commence
+        self.turn = PION_1  # Le joueur rouge commence
         self.valid_moves = {}
 
     def winner(self):
@@ -78,10 +78,10 @@ class Game:
 
     def change_turn(self):
         self.valid_moves = {}
-        if self.turn == RED:
-            self.turn = WHITE
+        if self.turn == PION_1:
+            self.turn = PION_2
         else:
-            self.turn = RED
+            self.turn = PION_1
 
     def get_board(self):
         return self.board

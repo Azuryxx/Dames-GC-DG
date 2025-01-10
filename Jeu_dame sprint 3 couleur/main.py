@@ -1,5 +1,6 @@
 import pygame
 from checkers.game import Game
+from checkers.constants import COLS, SQUARE_SIZE, ROWS
 
 # Initialisation de Pygame
 pygame.init()
@@ -12,10 +13,10 @@ pygame.display.set_caption("Jeu de Dames")
 # Fonction pour obtenir les coordonnées d'une case à partir de la souris
 def get_row_col_from_mouse(pos):
     x, y = pos
-    offset_x = (WIDTH - 10 * 80) // 2  # Damier centré
-    offset_y = (HEIGHT - 10 * 80) // 2
-    row = (y - offset_y) // 80
-    col = (x - offset_x) // 80
+    offset_x = (WIDTH - COLS * SQUARE_SIZE) // 2  # Damier centré
+    offset_y = (HEIGHT - ROWS * SQUARE_SIZE) // 2
+    row = (y - offset_y) // SQUARE_SIZE
+    col = (x - offset_x) // SQUARE_SIZE
     return row, col
 
 # Fonction principale pour gérer la boucle du jeu

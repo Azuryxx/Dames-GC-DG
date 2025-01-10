@@ -1,27 +1,27 @@
 import pygame
-from .constants import BLACK, ROWS, RED, SQUARE_SIZE, COLS, WHITE, WIDTH, HEIGHT
+from .constants import CASE_CLAIR, ROWS, SQUARE_SIZE, COLS, WIDTH, HEIGHT, PION_1, PION_2, CASE_FONCE
 from .piece import Piece
 
 
 class Board:
     def __init__(self):
         self.board = []
-        self.red_left = self.white_left = 12
-        self.red_kings = self.white_kings = 0
+        self.pion_I_left = self.pion_II_left = 12
+        self.pion_I_kings = self.pion_II_kings = 0
         self.create_board()
 
     def draw_squares(self, win):
-        # Dessin de la bordure
-        pygame.draw.rect(win, WHITE, (0, 0, WIDTH, HEIGHT), 5)  # Bordure blanche de 5 pixels
-
-        # Dessin des cases
-        win.fill(BLACK)
+        """Dessine les cases du plateau avec des couleurs alternées."""
         for row in range(ROWS):
-            for col in range(row % 2, COLS, 2):
-                pygame.draw.rect(win, RED, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            for col in range(COLS):
+                if (row + col) % 2 == 0:  # Alterne entre clair et foncé
+                    color = CASE_CLAIR
+                else:
+                    color = CASE_FONCE
+                pygame.draw.rect(win, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     def evaluate(self):
-        return self.white_left - self.red_left + (self.white_kings * 0.5 - self.red_kings * 0.5)
+        return self.pion_II_left- self.pion_I_left + (self.pion_II_kings * 0.5 - self.pion_I_kings * 0.5)
 
     def get_all_pieces(self, color):
         pieces = []
@@ -38,23 +38,23 @@ class Board:
         # Transformer en roi si atteint le bord opposé
         if row == ROWS - 1 or row == 0:
             piece.make_king()
-            if piece.color == WHITE:
-                self.white_kings += 1
+            if piece.color == PION_2:
+                self.pion_II_kings += 1
             else:
-                self.red_kings += 1
+                self.pion_I_kings += 1
 
     def get_piece(self, row, col):
         return self.board[row][col]
 
     def create_board(self):
         for row in range(ROWS):
-            self.board.append([])
+            self.board.append([])  # Crée une nouvelle ligne sur le plateau
             for col in range(COLS):
-                if col % 2 == ((row + 1) % 2):
-                    if row < 4:
-                        self.board[row].append(Piece(row, col, WHITE))
-                    elif row > 5:
-                        self.board[row].append(Piece(row, col, RED))
+                if col % 2 == ((row + 1) % 2):  # Alterne les cases
+                    if row < 3:  # Les pions bleus (PION_2) sont dans les 3 premières lignes
+                        self.board[row].append(Piece(row, col, PION_2))  # Bleu
+                    elif row > 4:  # Les pions roses (PION_1) sont dans les 3 dernières lignes
+                        self.board[row].append(Piece(row, col, PION_1))  # Rose
                     else:
                         self.board[row].append(0)
                 else:
@@ -73,16 +73,16 @@ class Board:
             if piece != 0:
                 print(f"Removing piece at ({piece.row}, {piece.col})")
                 self.board[piece.row][piece.col] = 0
-                if piece.color == RED:
-                    self.red_left -= 1
+                if piece.color == PION_1:
+                    self.pion_I_left -= 1
                 else:
-                    self.white_left -= 1
+                    self.pion_II_left -= 1
 
     def winner(self):
-        if self.red_left <= 0:
-            return WHITE
-        elif self.white_left <= 0:
-            return RED
+        if self.pion_I_left <= 0:
+            return PION_2
+        elif self.pion_II_left <= 0:
+            return PION_1
         return None
 
     def get_valid_moves(self, piece):
@@ -95,11 +95,11 @@ class Board:
         max_distance = ROWS if piece.king else 3  # Reines illimitées, pions max 2 cases (3 lignes inclusives)
 
         # Si la pièce est une reine ou un pion rouge, elle peut se déplacer vers le haut
-        if piece.color == RED or piece.king:
+        if piece.color == PION_1 or piece.king:
             moves.update(self._traverse_left(row - 1, max(row - max_distance, -1), -1, piece.color, left))
             moves.update(self._traverse_right(row - 1, max(row - max_distance, -1), -1, piece.color, right))
         # Si la pièce est une reine ou un pion blanc, elle peut se déplacer vers le bas
-        if piece.color == WHITE or piece.king:
+        if piece.color == PION_2 or piece.king:
             moves.update(self._traverse_left(row + 1, min(row + max_distance, ROWS), 1, piece.color, left))
             moves.update(self._traverse_right(row + 1, min(row + max_distance, ROWS), 1, piece.color, right))
 
