@@ -2,6 +2,8 @@ import pygame
 from tkinter import Tk, Label, Entry, Button, messagebox
 from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE
 from checkers.game import Game
+from  checkers.board import Board
+import  checkers.board
 from db import create_db, add_user, update_score, get_all_users, login_user
 
 FPS = 60
@@ -72,6 +74,32 @@ def login_window():
     root.mainloop()
 
 
+def game_loop():
+    pygame.init()
+    window = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Jeu de Dames")
+
+    # Initialiser le plateau
+    board = Board()
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            # Gérer les clics sur le damier
+            board.handle_click(event)
+
+        window.fill((255, 255, 255))  # Remplir l'écran avec une couleur blanche
+        # Dessiner le plateau, les pièces et autres éléments du jeu ici
+        board.draw(window)  # Exemple de dessin du plateau
+      
+
+
+        pygame.display.update()  # Met à jour l'affichage
+
+
 def main_game(username):
     """Lance le jeu principal après la connexion."""
     run = True
@@ -97,8 +125,6 @@ def main_game(username):
                 game.select(row, col)
 
         game.update()
-
-    pygame.quit()
 
 
 if __name__ == "__main__":

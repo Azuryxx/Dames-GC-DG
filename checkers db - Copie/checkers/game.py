@@ -1,6 +1,6 @@
 import pygame
-from .constants import BLUE, SQUARE_SIZE,PION_1, PION_2
-from checkers.board import Board
+from .constants import BLUE, SQUARE_SIZE,PION_1, PION_2,  HEIGHT, WIDTH, ROWS, COLS, BORDURE
+from .board import Board
 
 class Game:
     def __init__(self, win):
@@ -13,20 +13,12 @@ class Game:
         self.draw_valid_moves(self.valid_moves)
 
         # Dessiner la bordure autour de la zone de jeu (en dehors du plateau)
-        border_color = (255, 0, 0)  # Couleur de la bordure (rouge dans ce cas)
-        border_thickness = 10  # L'épaisseur de la bordure
+        border_color = BORDURE  # Couleur de la bordure (rouge dans ce cas)
+        border= 10  # L'épaisseur de la bordure
 
-        # Assurez-vous que la bordure ne chevauche pas le plateau
         pygame.draw.rect(self.win, border_color,
-                         (0, 0, self.win.get_width(), border_thickness))  # Bordure en haut
-        pygame.draw.rect(self.win, border_color,
-                         (0, 0, border_thickness, self.win.get_height()))  # Bordure à gauche
-        pygame.draw.rect(self.win, border_color,
-                         (0, self.win.get_height() - border_thickness, self.win.get_width(),
-                          border_thickness))  # Bordure en bas
-        pygame.draw.rect(self.win, border_color,
-                         (self.win.get_width() - border_thickness, 0, border_thickness,
-                          self.win.get_height()))  # Bordure à droite
+                         (0,HEIGHT - 100, WIDTH, HEIGHT - 100), border)  # Bordure à droite
+
 
         pygame.display.update()
 
@@ -43,6 +35,7 @@ class Game:
         self._init()
 
     def select(self, row, col):
+        """Sélectionne une pièce si c'est un pion du joueur actuel."""
         if self.selected:
             result = self._move(row, col)
             if not result:
@@ -83,6 +76,7 @@ class Game:
         else:
             self.turn = PION_1
 
+
     def get_board(self):
         return self.board
 
@@ -96,3 +90,5 @@ class Game:
         turn_text = f"C'est au tour de {self.turn}"  # Affiche la couleur du joueur actuel
         text_surface = font.render(turn_text, True, (255, 255, 255))  # Texte blanc
         self.win.blit(text_surface, (10, 10))  # Affiche le texte en haut à gauche
+
+

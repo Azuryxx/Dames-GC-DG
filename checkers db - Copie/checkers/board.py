@@ -1,159 +1,175 @@
-import pygame
-from .constants import CASE_CLAIR, ROWS, SQUARE_SIZE, COLS, WIDTH, HEIGHT, PION_1, PION_2, CASE_FONCE
+import  pygame
+from .constants import CASE_CLAIR, CASE_FONCE, ROWS, COLS, SQUARE_SIZE, PION_1, PION_2, WIDTH, HEIGHT, FONT
 from .piece import Piece
-
 
 class Board:
     def __init__(self):
+        # Initialisation des variables de jeu
         self.board = []
-        self.pion_I_left = self.pion_II_left = 12
-        self.pion_I_kings = self.pion_II_kings = 0
-        self.create_board()
+        self.red_left = self.white_left = 12  # Nombre de pièces restantes pour chaque couleur
+        self.red_kings = self.white_kings = 0  # Nombre de dames pour chaque couleur
+        self.create_board()  # Création du plateau de jeu
 
     def draw_squares(self, win):
-        """Dessine les cases du plateau avec des couleurs alternées."""
+        # Dessine les cases du plateau
+        win.fill(CASE_FONCE)  # Remplir le fond avec la couleur foncée
         for row in range(ROWS):
-            for col in range(COLS):
-                if (row + col) % 2 == 0:  # Alterne entre clair et foncé
-                    color = CASE_CLAIR
-                else:
-                    color = CASE_FONCE
-                pygame.draw.rect(win, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            for col in range(row % 2, COLS, 2):  # Remplir les cases alternées (cases noires)
+                pygame.draw.rect(win, CASE_CLAIR, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     def evaluate(self):
-        return self.pion_II_left- self.pion_I_left + (self.pion_II_kings * 0.5 - self.pion_I_kings * 0.5)
+        # Retourne l'évaluation du plateau basé sur le nombre de pièces et de dames
+        return self.white_left - self.red_left + (self.white_kings * 0.5 - self.red_kings * 0.5)
 
     def get_all_pieces(self, color):
+        # Retourne toutes les pièces d'une couleur donnée
         pieces = []
         for row in self.board:
             for piece in row:
-                if piece != 0 and piece.color == color:
+                if piece != 0 and piece.color == color:  # Si la case contient une pièce de la couleur spécifiée
                     pieces.append(piece)
         return pieces
 
     def move(self, piece, row, col):
+        # Déplace une pièce d'une case à une autre
         self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
-        piece.move(row, col)
+        piece.move(row, col)  # Met à jour la position de la pièce
 
-        # Transformer en roi si atteint le bord opposé
+        # Vérifie si la pièce a atteint la dernière ligne pour devenir une dame
         if row == ROWS - 1 or row == 0:
             piece.make_king()
             if piece.color == PION_2:
-                self.pion_II_kings += 1
+                self.white_kings += 1  # Incrémente le nombre de dames blanches
             else:
-                self.pion_I_kings += 1
+                self.red_kings += 1  # Incrémente le nombre de dames rouges
 
     def get_piece(self, row, col):
+        # Retourne la pièce à une position donnée
         return self.board[row][col]
 
+    def draw_turn(win, turn_color):
+        """Affiche le tour du joueur en bas du damier"""
+        text = FONT.render(f"Tour de: {turn_color}", True, (255, 255, 255))  # Texte en blanc
+        win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT - 50))  # Positionner le texte au centre en bas
+
+
     def create_board(self):
+        # Crée un plateau avec les pièces initiales placées sur les cases appropriées
         for row in range(ROWS):
             self.board.append([])  # Crée une nouvelle ligne sur le plateau
             for col in range(COLS):
                 if col % 2 == ((row + 1) % 2):  # Alterne les cases
-                    if row < 3:  # Les pions bleus (PION_2) sont dans les 3 premières lignes
-                        self.board[row].append(Piece(row, col, PION_2))  # Bleu
-                    elif row > 4:  # Les pions roses (PION_1) sont dans les 3 dernières lignes
-                        self.board[row].append(Piece(row, col, PION_1))  # Rose
+                    if row < 4:  # Les pièces rouges (PION_2) sont dans les 4 premières lignes
+                        self.board[row].append(Piece(row, col, PION_2))
+                    elif row > 5:  # Les pièces blanches (PION_1) sont dans les 4 dernières lignes
+                        self.board[row].append(Piece(row, col, PION_1))
                     else:
-                        self.board[row].append(0)
+                        self.board[row].append(0)  # Case vide
                 else:
-                    self.board[row].append(0)
+                    self.board[row].append(0)  # Case vide
 
     def draw(self, win):
-        self.draw_squares(win)
+        # Dessine le plateau et toutes les pièces
+        self.draw_squares(win)  # Dessine les cases du plateau
         for row in range(ROWS):
             for col in range(COLS):
                 piece = self.board[row][col]
-                if piece != 0:
+                if piece != 0:  # Si la case contient une pièce, dessiner la pièce
                     piece.draw(win)
 
     def remove(self, pieces):
+        # Enlève les pièces capturées du plateau
         for piece in pieces:
+            self.board[piece.row][piece.col] = 0  # La case devient vide
             if piece != 0:
-                print(f"Removing piece at ({piece.row}, {piece.col})")
-                self.board[piece.row][piece.col] = 0
                 if piece.color == PION_1:
-                    self.pion_I_left -= 1
+                    self.red_left -= 1  # Décrémente le nombre de pièces rouges restantes
                 else:
-                    self.pion_II_left -= 1
+                    self.white_left -= 1  # Décrémente le nombre de pièces blanches restantes
 
     def winner(self):
-        if self.pion_I_left <= 0:
-            return PION_2
-        elif self.pion_II_left <= 0:
-            return PION_1
-        return None
+        # Retourne le gagnant du jeu
+        if self.red_left <= 0:
+            return PION_2  # Le joueur 2 (blanc) gagne
+        elif self.white_left <= 0:
+            return PION_1  # Le joueur 1 (rouge) gagne
+
+        return None  # Si aucun joueur n'a gagné
 
     def get_valid_moves(self, piece):
+        # Retourne les mouvements valides pour une pièce donnée
         moves = {}
         left = piece.col - 1
         right = piece.col + 1
         row = piece.row
 
-        # Détermine la limite en fonction du type de pièce
-        max_distance = ROWS if piece.king else 3  # Reines illimitées, pions max 2 cases (3 lignes inclusives)
-
-        # Si la pièce est une reine ou un pion rouge, elle peut se déplacer vers le haut
         if piece.color == PION_1 or piece.king:
-            moves.update(self._traverse_left(row - 1, max(row - max_distance, -1), -1, piece.color, left))
-            moves.update(self._traverse_right(row - 1, max(row - max_distance, -1), -1, piece.color, right))
-        # Si la pièce est une reine ou un pion blanc, elle peut se déplacer vers le bas
+            moves.update(self._traverse_left(row - 1, -1, -1, piece.color, left))
+            moves.update(self._traverse_right(row - 1, -1, -1, piece.color, right))
         if piece.color == PION_2 or piece.king:
-            moves.update(self._traverse_left(row + 1, min(row + max_distance, ROWS), 1, piece.color, left))
-            moves.update(self._traverse_right(row + 1, min(row + max_distance, ROWS), 1, piece.color, right))
+            moves.update(self._traverse_left(row + 1, ROWS, 1, piece.color, left))
+            moves.update(self._traverse_right(row + 1, ROWS, 1, piece.color, right))
 
         return moves
 
     def _traverse_left(self, start, stop, step, color, left, skipped=[]):
+        # Traverse vers la gauche à partir d'une position donnée
         moves = {}
         last = []
-        distance = 0  # Compteur pour limiter les déplacements à 2 cases maximum
+        for r in range(start, stop, step):
+            if left < 0:  # Si la colonne est invalide, sortir
+                break
 
-        while 0 <= left < COLS and start != stop and distance < 3:  # Limite à 2 cases (3 lignes inclusives)
-            current = self.board[start][left]
-
-            if current == 0:  # Case vide
+            current = self.board[r][left]
+            if current == 0:
+                # Si la case est vide, enregistrer le mouvement possible
                 if skipped and not last:
                     break
                 elif skipped:
-                    moves[(start, left)] = last + skipped
+                    moves[(r, left)] = last + skipped
                 else:
-                    moves[(start, left)] = last
-            elif current.color == color:  # Si la case contient une pièce de la même couleur
-                break
-            else:  # Une pièce adverse, on peut la sauter
-                last = [current]
+                    moves[(r, left)] = last
 
-            start += step
-            left -= 1  # Avancer sur la diagonale gauche
-            distance += 1  # Incrémenter la distance parcourue
+                if last:  # Si des pièces ont été sautées
+                    moves.update(self._traverse_left(r + step, stop, step, color, left - 1, skipped=last))
+                    moves.update(self._traverse_right(r + step, stop, step, color, left + 1, skipped=last))
+                break
+            elif current.color == color:
+                break  # Si une pièce de la même couleur est trouvée, arrêter
+            else:
+                last = [current]  # Marquer la pièce comme étant sautée
+
+            left -= 1
 
         return moves
 
     def _traverse_right(self, start, stop, step, color, right, skipped=[]):
+        # Traverse vers la droite à partir d'une position donnée
         moves = {}
         last = []
-        distance = 0  # Compteur pour limiter les déplacements à 2 cases maximum
+        for r in range(start, stop, step):
+            if right >= COLS:  # Si la colonne est invalide, sortir
+                break
 
-        while 0 <= right < COLS and start != stop and distance < 3:  # Limite à 2 cases (3 lignes inclusives)
-            current = self.board[start][right]
-
-            if current == 0:  # Case vide
+            current = self.board[r][right]
+            if current == 0:
+                # Si la case est vide, enregistrer le mouvement possible
                 if skipped and not last:
                     break
                 elif skipped:
-                    moves[(start, right)] = last + skipped
+                    moves[(r, right)] = last + skipped
                 else:
-                    moves[(start, right)] = last
-            elif current.color == color:  # Si la case contient une pièce de la même couleur
-                break
-            else:  # Une pièce adverse, on peut la sauter
-                last = [current]
+                    moves[(r, right)] = last
 
-            start += step
-            right += 1  # Avancer sur la diagonale droite
-            distance += 1  # Incrémenter la distance parcourue
+                if last:  # Si des pièces ont été sautées
+                    moves.update(self._traverse_left(r + step, stop, step, color, right - 1, skipped=last))
+                    moves.update(self._traverse_right(r + step, stop, step, color, right + 1, skipped=last))
+                break
+            elif current.color == color:
+                break  # Si une pièce de la même couleur est trouvée, arrêter
+            else:
+                last = [current]  # Marquer la pièce comme étant sautée
+
+            right += 1
 
         return moves
-
