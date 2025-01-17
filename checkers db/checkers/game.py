@@ -12,6 +12,8 @@ Purpose : gestion du gagnant
 """
 #import
 import pygame
+import tkinter as tk
+from tkinter import messagebox
 from .constants import BLUE, SQUARE_SIZE,PION_1, PION_2,  HEIGHT, WIDTH, ROWS, COLS, BORDURE
 from .board import Board
 
@@ -49,18 +51,47 @@ class Game:
         self.turn = PION_1  # Le joueur rouge commence
         self.valid_moves = {}
 
+        # Ajoutez cette méthode à votre classe Game
+        def display_winner(self, winner_color):
+            """Affiche un message indiquant quel joueur a gagné dans une nouvelle fenêtre."""
+            root = tk.Tk()
+            root.title("Fin du jeu")
+
+            # Définir un message selon le joueur qui a gagné
+            if winner_color == PION_1:
+                winner_text = "Le joueur Rouge a gagné!"
+            elif winner_color == PION_2:
+                winner_text = "Le joueur Blanc a gagné!"
+
+            # Label pour afficher le gagnant
+            label = tk.Label(root, text=winner_text, font=("Arial", 20), fg="black")
+            label.pack(pady=20)
+
+            # Fonction pour fermer la fenêtre de jeu ou retourner à la page d'accueil
+            def on_quit():
+                pygame.quit()  # Fermer pygame
+                root.quit()  # Fermer la fenêtre Tkinter
+                exit()  # Quitter le programme
+
+            # Bouton pour quitter le jeu
+            quit_button = tk.Button(root, text="Quitter", command=on_quit)
+            quit_button.pack(pady=10)
+
+            # Optionnel : bouton pour recommencer (vous pouvez l'ajouter si nécessaire)
+            def restart_game():
+                self.reset()  # Reset du jeu
+                root.quit()  # Fermer la fenêtre Tkinter
+                # Recommencer le jeu ou revenir au menu principal
+
+            restart_button = tk.Button(root, text="Recommencer", command=restart_game)
+            restart_button.pack(pady=10)
+
+            # Lancer la fenêtre Tkinter
+            root.mainloop()
 
     def winner(self):
         # Vérifie si un joueur n'a plus de pions
-        if self.pion1_left == 1:  # Un seul pion rouge
-            if self.is_piece_blocked(self.get_all_pieces(PION_2)[0]):  # Vérifie si la seule pièce restante est bloquée
-                return PION_1  # Le joueur 1 (rouge) gagne
-            return None  # La partie continue si la pièce n'est pas bloquée
-        elif self.pion2_left == 1:  # Un seul pion blanc
-            if self.is_piece_blocked(self.get_all_pieces(PION_1)[0]):  # Vérifie si la seule pièce restante est bloquée
-                return PION_2  # Le joueur 2 (blanc) gagne
-            return None  # La partie continue si la pièce n'est pas bloquée
-        elif self.pion1_left <= 0:
+        if self.pion1_left <= 0:
             return PION_2  # Le joueur 2 (blanc) gagne
         elif self.pion2_left <= 0:
             return PION_1  # Le joueur 1 (rouge) gagne

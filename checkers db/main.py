@@ -104,6 +104,12 @@ def game_loop():
         if board.check_victory():
             running = False  # Arrêter la boucle si un joueur a gagné
 
+        # Vérifiez si un joueur a gagné
+        winner_color = game.winner()  # Vérifie si un joueur a gagné
+        if winner_color:
+            game.display_winner(winner_color)  # Afficher la fenêtre du gagnant
+            running = False  # Arrêter la boucle si un gagnant est trouvé
+
         pygame.display.update()
 
         # Gestion des événements
