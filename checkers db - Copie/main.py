@@ -1,6 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+#--------1---------2---------3---------4---------5---------6---------7---------8
+#2345678901234567890123456789012345678901234567890123456789012345678901234567890
+"""
+Name    : main.py
+Authors : Gatien Clerc et Damien Garcia
+Date    : 2025.01.17
+Version : 0.2
+Purpose : boucle pricipale et gestion de la db
+"""
+#import
 import pygame
 from tkinter import Tk, Label, Entry, Button, messagebox
-from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE
+from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE, CASE_FONCE
 from checkers.game import Game
 from  checkers.board import Board
 import  checkers.board
@@ -84,20 +97,23 @@ def game_loop():
 
     running = True
     while running:
+        window.fill(CASE_FONCE)  # Remplir l'écran avec la couleur foncée
+        board.draw(window)  # Dessiner le plateau et les pièces
+
+        # Vérifier si un joueur a gagné
+        if board.check_victory():
+            running = False  # Arrêter la boucle si un joueur a gagné
+
+        pygame.display.update()
+
+        # Gestion des événements
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                running = False  # Quitter le jeu si la fenêtre est fermée
 
-            # Gérer les clics sur le damier
-            board.handle_click(event)
+        # Autres actions de jeu ici (mouvement de pièces, etc.)
 
-        window.fill((255, 255, 255))  # Remplir l'écran avec une couleur blanche
-        # Dessiner le plateau, les pièces et autres éléments du jeu ici
-        board.draw(window)  # Exemple de dessin du plateau
-      
-
-
-        pygame.display.update()  # Met à jour l'affichage
+    pygame.quit()
 
 
 def main_game(username):

@@ -1,3 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+#--------1---------2---------3---------4---------5---------6---------7---------8
+#2345678901234567890123456789012345678901234567890123456789012345678901234567890
+"""
+Name    : main.py
+Authors : Gatien Clerc et Damien Garcia
+Date    : 2025.01.17
+Version : 1.3
+Purpose : gestion du gagnant
+"""
+#import
 import pygame
 from .constants import BLUE, SQUARE_SIZE,PION_1, PION_2,  HEIGHT, WIDTH, ROWS, COLS, BORDURE
 from .board import Board
@@ -6,21 +19,29 @@ class Game:
     def __init__(self, win):
         self._init()
         self.win = win
+        self.pion1_left = self.pion2_left = 20  # Nombre de pièces restantes pour chaque couleurur
+        self.pion1_kings = self.pion2_kings = 0  # Nombre de dames pour chaque couleur
 
     def update(self):
         # Dessiner les cases du plateau
         self.board.draw(self.win)
         self.draw_valid_moves(self.valid_moves)
 
+        # Vérifie s'il y a un gagnant
+        winner_color = self.winner()  # Vérifie si un joueur a gagné
+        if winner_color:
+            self.display_winner(winner_color)  # Afficher le gagnant
+            return  # Arrêter le jeu si un gagnant est trouvé
+
         # Dessiner la bordure autour de la zone de jeu (en dehors du plateau)
         border_color = BORDURE  # Couleur de la bordure (rouge dans ce cas)
-        border= 10  # L'épaisseur de la bordure
+        border = 10  # L'épaisseur de la bordure
 
         pygame.draw.rect(self.win, border_color,
-                         (0,HEIGHT - 100, WIDTH, HEIGHT - 100), border)  # Bordure à droite
-
+                         (0, HEIGHT - 100, WIDTH, HEIGHT - 100), border)  # Bordure à droit
 
         pygame.display.update()
+
 
     def _init(self):
         self.selected = None
@@ -28,8 +49,26 @@ class Game:
         self.turn = PION_1  # Le joueur rouge commence
         self.valid_moves = {}
 
+
     def winner(self):
-        return self.board.winner()
+        # Vérifie si un joueur n'a plus de pions
+        if self.pion1_left == 1:  # Un seul pion rouge
+            if self.is_piece_blocked(self.get_all_pieces(PION_2)[0]):  # Vérifie si la seule pièce restante est bloquée
+                return PION_1  # Le joueur 1 (rouge) gagne
+            return None  # La partie continue si la pièce n'est pas bloquée
+        elif self.pion2_left == 1:  # Un seul pion blanc
+            if self.is_piece_blocked(self.get_all_pieces(PION_1)[0]):  # Vérifie si la seule pièce restante est bloquée
+                return PION_2  # Le joueur 2 (blanc) gagne
+            return None  # La partie continue si la pièce n'est pas bloquée
+        elif self.pion1_left <= 0:
+            return PION_2  # Le joueur 2 (blanc) gagne
+        elif self.pion2_left <= 0:
+            return PION_1  # Le joueur 1 (rouge) gagne
+        return None  # Si aucun joueur n'a gagné
+
+    def is_piece_blocked(self, piece):
+        valid_moves = self.get_valid_moves(piece)
+        return len(valid_moves) == 0  # Si la pièce n'a pas de mouvement valide, elle est bloquée
 
     def reset(self):
         self._init()
@@ -91,4 +130,35 @@ class Game:
         text_surface = font.render(turn_text, True, (255, 255, 255))  # Texte blanc
         self.win.blit(text_surface, (10, 10))  # Affiche le texte en haut à gauche
 
+    # Initialiser pygame
+    pygame.init()
 
+    def display_winner(self, winner_color):
+        """Affiche un message indiquant quel joueur a gagné."""
+        font = pygame.font.SysFont("Arial", 40)
+
+        if winner_color == PION_1:
+            winner_text = "Le joueur Rouge a gagné!"
+            text_color = (255, 0, 0)  # Rouge pour la couleur du texte
+        elif winner_color == PION_2:
+            winner_text = "Le joueur Blanc a gagné!"
+            text_color = (255, 0, 0)  # Rouge pour la couleur du texte
+
+        # Créer la surface avec le texte
+        text_surface = font.render(winner_text, True, text_color)  # Texte en rouge
+        # Centrer le texte à l'écran
+        self.win.blit(text_surface,
+                      (WIDTH // 2 - text_surface.get_width() // 2, HEIGHT // 2 - text_surface.get_height() // 2))
+
+        # Afficher l'écran
+        pygame.display.update()
+
+        # Attendre que l'utilisateur appuie sur une touche pour continuer ou fermer
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                if event.type == pygame.KEYDOWN:
+                    waiting = False

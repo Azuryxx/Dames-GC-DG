@@ -1,6 +1,18 @@
-import pygame
-from .constants import PION_1_bor, PION_2_bor, PION_1, PION_2, CROWN, SQUARE_SIZE
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
+#--------1---------2---------3---------4---------5---------6---------7---------8
+#2345678901234567890123456789012345678901234567890123456789012345678901234567890
+"""
+Name    : main.py
+Authors : Gatien Clerc et Damien Garcia
+Date    : 2025.01.17
+Version : 0.4
+Purpose : tout  ce qui est pour les piont
+"""
+#import
+import pygame
+from .constants import PION_1_bor, PION_2_bor, PION_1, PION_2, CROWN, SQUARE_SIZE, ROWS, COLS
 
 class Piece:
     PADDING = 15  # Padding autour du cercle pour chaque pièce
@@ -43,6 +55,43 @@ class Piece:
         self.row = row
         self.col = col
         self.calc_pos()  # Recalcule sa position (x, y)
+
+    def get_valid_moves(self, piece):
+        moves = {}
+        directions = [
+            (-1, -1),  # Haut-Gauche
+            (-1, 1),  # Haut-Droit
+            (1, -1),  # Bas-Gauche
+            (1, 1),  # Bas-Droit
+            (0, -1),  # Gauche
+            (0, 1),  # Droit
+            (-1, 0),  # Haut
+            (1, 0)  # Bas
+        ]
+
+        for direction in directions:
+            left = piece.col + direction[1]
+            right = piece.col + direction[1]
+            row = piece.row + direction[0]
+
+            while 0 <= row < ROWS and 0 <= left < COLS and self.board[row][left] == 0:
+                moves[(row, left)] = []  # La case est libre, on l'ajoute aux mouvements valides
+                row += direction[0]
+                left += direction[1]
+
+            # Si une pièce adverse est trouvée, on peut sauter
+            if 0 <= row < ROWS and 0 <= left < COLS and self.board[row][left] != 0 and self.board[row][
+                left].color != piece.color:
+                moves[(row, left)] = [self.board[row][left]]  # Ajout d'une pièce capturable
+                row += direction[0]
+                left += direction[1]
+
+                while 0 <= row < ROWS and 0 <= left < COLS and self.board[row][left] == 0:
+                    moves[(row, left)] = []  # Ajouter cette case comme une possibilité valide après la capture
+                    row += direction[0]
+                    left += direction[1]
+
+        return moves
 
     def __repr__(self):
         # Représentation de la pièce

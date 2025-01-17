@@ -1,14 +1,28 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+#--------1---------2---------3---------4---------5---------6---------7---------8
+#2345678901234567890123456789012345678901234567890123456789012345678901234567890
+"""
+Name    : board.py
+Authors : Gatien Clerc et Damien Garcia
+Date    : 2025.01.17
+Version : 0.07
+Purpose : gestion des mouvement et de la fichage
+"""
+#import
 import  pygame
-from .constants import CASE_CLAIR, CASE_FONCE, ROWS, COLS, SQUARE_SIZE, PION_1, PION_2, WIDTH, HEIGHT, FONT
+from .constants import CASE_CLAIR, CASE_FONCE, ROWS, COLS, SQUARE_SIZE, PION_1, PION_2, WIDTH, HEIGHT,BLUE
 from .piece import Piece
 
 class Board:
     def __init__(self):
         # Initialisation des variables de jeu
         self.board = []
-        self.red_left = self.white_left = 12  # Nombre de pièces restantes pour chaque couleur
-        self.red_kings = self.white_kings = 0  # Nombre de dames pour chaque couleur
+        self.turn_color = PION_1  # Le joueur qui commence
         self.create_board()  # Création du plateau de jeu
+        self.pion1_left = self.pion2_left = 20  # Nombre de pièces restantes pour chaque couleurur
+        self.pion1_kings = self.pion2_kings = 0  # Nombre de dames pour chaque couleur
 
     def draw_squares(self, win):
         # Dessine les cases du plateau
@@ -19,7 +33,7 @@ class Board:
 
     def evaluate(self):
         # Retourne l'évaluation du plateau basé sur le nombre de pièces et de dames
-        return self.white_left - self.red_left + (self.white_kings * 0.5 - self.red_kings * 0.5)
+        return self.pion2_left - self.pion1_left + (self.pion2_kings * 0.5 - self.pion1_kings * 0.5)
 
     def get_all_pieces(self, color):
         # Retourne toutes les pièces d'une couleur donnée
@@ -30,6 +44,47 @@ class Board:
                     pieces.append(piece)
         return pieces
 
+    def check_victory(self):
+        # Vérifier si l'un des joueurs a gagné en n'ayant plus de pions
+        if self.pion1_left == 0:
+            self.display_winner("Joueur 2")  # Joueur 2 gagne
+            return True
+        elif self.pion2_left == 0:
+            self.display_winner("Joueur 1")  # Joueur 1 gagne
+            return True
+
+        # Vérifier si un joueur ne peut plus bouger
+        if self.can_player_move(PION_1) == False:
+            self.display_winner("Joueur 2")  # Joueur 2 gagne
+            return True
+        elif self.can_player_move(PION_2) == False:
+            self.display_winner("Joueur 1")  # Joueur 1 gagne
+            return True
+
+        return False
+
+    def display_winner(self, winner):
+        # Affiche un message de victoire à l'écran
+        font = pygame.font.Font(None, 36)
+        text = font.render(f"{winner} a gagné!", True, BLUE)
+        screen = pygame.display.get_surface()
+        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2))
+        pygame.display.update()
+        pygame.time.wait(10000)  # Attendre 2 secondes avant de quitter
+
+    def can_player_move(self, player_color):
+        def can_player_move(self, player_color):
+            # Vérifie si le joueur peut effectuer un mouvement
+            for row in range(ROWS):
+                for col in range(COLS):
+                    piece = self.board[row][col]
+                    if piece and piece.color == player_color:
+                        # Vérifie si la pièce peut se déplacer
+                        valid_moves = piece.get_valid_moves(self)
+                        if valid_moves:
+                            return True  # Si un mouvement valide est trouvé
+            return False  # Aucun mouvement valide trouvé
+
     def move(self, piece, row, col):
         # Déplace une pièce d'une case à une autre
         self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
@@ -39,19 +94,17 @@ class Board:
         if row == ROWS - 1 or row == 0:
             piece.make_king()
             if piece.color == PION_2:
-                self.white_kings += 1  # Incrémente le nombre de dames blanches
+                self.pion2_kings += 1  # Incrémente le nombre de dames blanches
             else:
-                self.red_kings += 1  # Incrémente le nombre de dames rouges
+                self.pion1_kings += 1  # Incrémente le nombre de dames rouges
+
+        # Vérifier si un joueur a gagné après chaque mouvement
+        if self.check_victory():
+            return  # La partie est terminée si un joueur a gagné
 
     def get_piece(self, row, col):
         # Retourne la pièce à une position donnée
         return self.board[row][col]
-
-    def draw_turn(win, turn_color):
-        """Affiche le tour du joueur en bas du damier"""
-        text = FONT.render(f"Tour de: {turn_color}", True, (255, 255, 255))  # Texte en blanc
-        win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT - 50))  # Positionner le texte au centre en bas
-
 
     def create_board(self):
         # Crée un plateau avec les pièces initiales placées sur les cases appropriées
@@ -83,32 +136,28 @@ class Board:
             self.board[piece.row][piece.col] = 0  # La case devient vide
             if piece != 0:
                 if piece.color == PION_1:
-                    self.red_left -= 1  # Décrémente le nombre de pièces rouges restantes
+                    self.pion1_left -= 1  # Décrémente le nombre de pièces rouges restantes
                 else:
-                    self.white_left -= 1  # Décrémente le nombre de pièces blanches restantes
+                    self.pion2_left -= 1  # Décrémente le nombre de pièces blanches restantes
 
-    def winner(self):
-        # Retourne le gagnant du jeu
-        if self.red_left <= 0:
-            return PION_2  # Le joueur 2 (blanc) gagne
-        elif self.white_left <= 0:
-            return PION_1  # Le joueur 1 (rouge) gagne
-
-        return None  # Si aucun joueur n'a gagné
 
     def get_valid_moves(self, piece):
-        # Retourne les mouvements valides pour une pièce donnée
         moves = {}
-        left = piece.col - 1
-        right = piece.col + 1
-        row = piece.row
 
-        if piece.color == PION_1 or piece.king:
-            moves.update(self._traverse_left(row - 1, -1, -1, piece.color, left))
-            moves.update(self._traverse_right(row - 1, -1, -1, piece.color, right))
-        if piece.color == PION_2 or piece.king:
-            moves.update(self._traverse_left(row + 1, ROWS, 1, piece.color, left))
-            moves.update(self._traverse_right(row + 1, ROWS, 1, piece.color, right))
+        if piece.king:
+            # Si la pièce est une reine, nous utilisons les nouvelles fonctions de traversée pour chaque diagonale
+            moves.update(self._traverse_left_queen(piece.row - 1, -1, -1, piece.color, piece.col - 1))
+            moves.update(self._traverse_right_queen(piece.row - 1, -1, -1, piece.color, piece.col + 1))
+            moves.update(self._traverse_left_queen(piece.row + 1, ROWS, 1, piece.color, piece.col - 1))
+            moves.update(self._traverse_right_queen(piece.row + 1, ROWS, 1, piece.color, piece.col + 1))
+        else:
+            # Déplacements classiques pour les pions (mouvement sur 1 case dans une direction)
+            if piece.color == PION_1 or piece.king:
+                moves.update(self._traverse_left(piece.row - 1, -1, -1, piece.color, piece.col - 1))
+                moves.update(self._traverse_right(piece.row - 1, -1, -1, piece.color, piece.col + 1))
+            if piece.color == PION_2 or piece.king:
+                moves.update(self._traverse_left(piece.row + 1, ROWS, 1, piece.color, piece.col - 1))
+                moves.update(self._traverse_right(piece.row + 1, ROWS, 1, piece.color, piece.col + 1))
 
         return moves
 
@@ -172,4 +221,56 @@ class Board:
 
             right += 1
 
+        return moves
+
+    def _traverse_left_queen(self, start_row, stop_row, step, color, start_col, skipped=[]):
+        """Fonction pour gérer les mouvements à gauche pour une reine avec la possibilité de capturer plusieurs pièces"""
+        moves = {}
+        row = start_row
+        col = start_col
+        while 0 <= row < ROWS and 0 <= col < COLS:
+            current = self.board[row][col]
+            if current == 0:  # Case vide
+                if skipped:  # Si une pièce a été sautée
+                    moves[(row, col)] = skipped  # Ajouter le mouvement avec les pièces capturées
+                else:
+                    moves[(row, col)] = []  # Ajouter le mouvement sans capture
+            elif current.color == color:  # Une pièce de la même couleur
+                break  # Arrêter si une pièce de la même couleur est rencontrée
+            else:  # Une pièce ennemie, elle peut être capturée
+                next_row = row + step
+                next_col = col - 1
+                if 0 <= next_row < ROWS and 0 <= next_col < COLS and self.board[next_row][next_col] == 0:
+                    # Vérifier si la case suivante est vide pour pouvoir capturer
+                    moves.update(
+                        self._traverse_left_queen(next_row, stop_row, step, color, next_col, skipped + [current]))
+                break
+            row += step
+            col -= 1
+        return moves
+
+    def _traverse_right_queen(self, start_row, stop_row, step, color, start_col, skipped=[]):
+        """Fonction pour gérer les mouvements à droite pour une reine avec la possibilité de capturer plusieurs pièces"""
+        moves = {}
+        row = start_row
+        col = start_col
+        while 0 <= row < ROWS and 0 <= col < COLS:
+            current = self.board[row][col]
+            if current == 0:  # Case vide
+                if skipped:  # Si une pièce a été sautée
+                    moves[(row, col)] = skipped  # Ajouter le mouvement avec les pièces capturées
+                else:
+                    moves[(row, col)] = []  # Ajouter le mouvement sans capture
+            elif current.color == color:  # Une pièce de la même couleur
+                break  # Arrêter si une pièce de la même couleur est rencontrée
+            else:  # Une pièce ennemie, elle peut être capturée
+                next_row = row + step
+                next_col = col + 1
+                if 0 <= next_row < ROWS and 0 <= next_col < COLS and self.board[next_row][next_col] == 0:
+                    # Vérifier si la case suivante est vide pour pouvoir capturer
+                    moves.update(
+                        self._traverse_right_queen(next_row, stop_row, step, color, next_col, skipped + [current]))
+                break
+            row += step
+            col += 1
         return moves
